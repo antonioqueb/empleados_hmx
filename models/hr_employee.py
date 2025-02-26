@@ -62,7 +62,6 @@ class HrEmployee(models.Model):
     )
 
     @api.depends('x_fecha_ingreso')
-       @api.depends('x_fecha_ingreso')
     def _compute_antiguedad(self):
         for record in self:
             if record.x_fecha_ingreso:

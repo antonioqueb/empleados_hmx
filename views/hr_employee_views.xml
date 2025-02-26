@@ -72,7 +72,6 @@
                 widget="badge"
                 decoration-warning="1"
             />
-
             <field name="x_fecha_baja"
                    widget="badge"
                    decoration-danger="1"
