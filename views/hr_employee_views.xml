@@ -53,7 +53,7 @@
                        decoration-danger="x_planta == 'Planta 1'"
                        decoration-warning="x_planta == 'Planta 2'"
                        decoration-success="x_planta == 'Planta 3'"
-                       decoration-primary="x_planta == 'Planta 4'"
+                       decoration-info="x_planta == 'Planta 4'"
                        decoration-info="x_planta == 'Planta 5'"
                        decoration-muted="x_planta == 'Planta 6'"
                        decoration-bf="x_planta == 'Planta 7'"
