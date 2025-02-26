@@ -17,6 +17,8 @@
                     <field name="x_ubicacion"/>
                     <field name="x_fecha_ingreso"/>
                     <field name="x_antiguedad"/>
+                    <field name="x_antiguedad_meses"/>
+                    <field name="x_antiguedad_anios"/>
                     <field name="x_fecha_baja"/>
                 </group>
             </xpath>
@@ -62,6 +64,15 @@
                    widget="badge"
                    decoration-warning="1"
             />
+            <field name="x_antiguedad_meses"
+                widget="badge"
+                decoration-warning="1"
+            />
+            <field name="x_antiguedad_anios"
+                widget="badge"
+                decoration-warning="1"
+            />
+
             <field name="x_fecha_baja"
                    widget="badge"
                    decoration-danger="1"
