@@ -41,21 +41,6 @@ class HrEmployee(models.Model):
         help='Días transcurridos desde la fecha de ingreso hasta hoy.'
     )
 
-        x_antiguedad_meses = fields.Integer(
-        string='Antigüedad (meses)',
-        compute='_compute_antiguedad',
-        store=True,
-        help='Meses transcurridos desde la fecha de ingreso hasta hoy.'
-    )
-
-    x_antiguedad_anios = fields.Integer(
-        string='Antigüedad (años)',
-        compute='_compute_antiguedad',
-        store=True,
-        help='Años transcurridos desde la fecha de ingreso hasta hoy.'
-    )
-
-
     x_fecha_baja = fields.Date(
         string='Fecha de Baja',
         help='Fecha en la que el empleado causó baja.'
