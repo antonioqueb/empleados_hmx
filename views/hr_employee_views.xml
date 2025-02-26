@@ -27,64 +27,49 @@
     <!-- ===================================================================
          2) Vista de lista (hr.view_employee_tree)
          =================================================================== -->
-    <record id="view_employee_tree_inherit_hmx" model="ir.ui.view">
-        <field name="name">hr.employee.tree.hmx</field>
-        <field name="model">hr.employee</field>
-        <field name="inherit_id" ref="hr.view_employee_tree"/>
-        <field name="arch" type="xml">
+   <record id="view_employee_tree_inherit_hmx" model="ir.ui.view">
+    <field name="name">hr.employee.tree.hmx</field>
+    <field name="model">hr.employee</field>
+    <field name="inherit_id" ref="hr.view_employee_tree"/>
+    <field name="arch" type="xml">
 
-            <!-- 1) Insertar x_numero_nomina antes del campo name,
-                   para que sea la primera columna (ordenable). -->
-            <xpath expr="//tree/field[@name='name']" position="before">
-                <field name="x_numero_nomina"
-                       sortable="True"
-                       widget="badge"
-                       decoration-info="True"
-                       />
-            </xpath>
+        <xpath expr="//tree/field[@name='name']" position="before">
+            <field name="x_numero_nomina"
+                   widget="badge"
+                   decoration-info="1"
+            />
+        </xpath>
 
-            <!-- 2) Insertar el resto de campos después del name,
-                   en el orden deseado, con decoraciones de color. -->
-            <xpath expr="//tree/field[@name='name']" position="after">
+        <xpath expr="//tree/field[@name='name']" position="after">
+            <field name="x_planta"
+                   widget="badge"
+                   decoration-danger="x_planta == 'Planta 1'"
+                   decoration-warning="x_planta == 'Planta 2'"
+                   decoration-success="x_planta == 'Planta 3'"
+                   decoration-muted="x_planta in ('Planta 4','Planta 5')"
+                   decoration-info="x_planta == 'Planta 6'"
+                   decoration-bf="x_planta == 'Planta 7'"
+            />
+            <field name="x_ubicacion"
+                   widget="badge"
+                   decoration-info="1"
+            />
+            <field name="x_fecha_ingreso"
+                   widget="badge"
+                   decoration-success="1"
+            />
+            <field name="x_antiguedad"
+                   widget="badge"
+                   decoration-warning="1"
+            />
+            <field name="x_fecha_baja"
+                   widget="badge"
+                   decoration-danger="1"
+            />
+        </xpath>
 
-                <!-- Planta: distintos colores para cada opción -->
-              <field name="x_planta"
-                    widget="badge"
-                    decoration-danger="x_planta == 'Planta 1'"
-                    decoration-warning="x_planta == 'Planta 2'"
-                    decoration-success="x_planta == 'Planta 3'"
-                    decoration-muted="x_planta in ('Planta 4','Planta 5')"
-                    decoration-info="x_planta == 'Planta 6'"
-                    decoration-bf="x_planta == 'Planta 7'"
-                />
+    </field>
+</record>
 
-
-                <!-- Ubicación: un color fijo (info) -->
-                <field name="x_ubicacion"
-                       widget="badge"
-                       decoration-info="True"
-                       />
-
-                <!-- Fecha de Ingreso: un color fijo (success) -->
-                <field name="x_fecha_ingreso"
-                       widget="badge"
-                       decoration-success="True"
-                       />
-
-                <!-- Antigüedad: un color fijo (warning) -->
-                <field name="x_antiguedad"
-                       widget="badge"
-                       decoration-warning="True"
-                       />
-
-                <!-- Fecha de Baja: un color fijo (danger) -->
-                <field name="x_fecha_baja"
-                       widget="badge"
-                       decoration-danger="True"
-                       />
-            </xpath>
-
-        </field>
-    </record>
 
 </odoo>
