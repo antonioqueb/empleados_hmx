@@ -63,14 +63,11 @@ class HrEmployee(models.Model):
 
     @api.depends('x_fecha_ingreso')
     def _compute_antiguedad(self):
+        """ Calcula la antigüedad en días desde la fecha de ingreso
+            hasta la fecha actual. """
         for record in self:
             if record.x_fecha_ingreso:
                 delta = date.today() - record.x_fecha_ingreso
                 record.x_antiguedad = delta.days
-                record.x_antiguedad_meses = delta.days // 30
-                record.x_antiguedad_anios = delta.days // 365
             else:
                 record.x_antiguedad = 0
-                record.x_antiguedad_meses = 0
-                record.x_antiguedad_anios = 0
-
