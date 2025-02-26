@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        ========== Herencia de la vista de formulario de Empleado ==========
+        - ID externo de la vista original: hr.view_employee_form
+        - Añadimos los nuevos campos en la posición que prefieras.
+    -->
+    <record id="view_employee_form_inherit_hmx" model="ir.ui.view">
+        <field name="name">hr.employee.form.hmx</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[hasclass('o_hr_employee_form_main')]" position="inside">
+                <group string="Datos adicionales HMX">
+                    <field name="x_numero_nomina"/>
+                    <field name="x_planta"/>
+                    <field name="x_ubicacion"/>
+                    <field name="x_fecha_ingreso"/>
+                    <field name="x_antiguedad"/>
+                    <field name="x_fecha_baja"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+
+    <!--
+        ========== Herencia de la vista de lista de Empleado ==========
+        - ID externo de la vista original: hr.view_employee_tree
+        - Mostramos los nuevos campos y los transformamos en 'badges' de colores
+        - El campo x_numero_nomina va primero, luego el name,
+          y después los demás campos en el orden que se requiera.
+    -->
+    <record id="view_employee_tree_inherit_hmx" model="ir.ui.view">
+        <field name="name">hr.employee.tree.hmx</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+
+            <!-- Forzamos x_numero_nomina como primera columna -->
+            <xpath expr="//field[@name='name']" position="before">
+                <field name="x_numero_nomina" 
+                       sortable="True"
+                       widget="badge"
+                       decoration-info="True"
+                       />
+            </xpath>
+
+            <!-- Reordenamos: x_numero_nomina, name y luego los otros campos. -->
+            <xpath expr="//field[@name='name']" position="attributes">
+                <attribute name="invisible">False</attribute>
+            </xpath>
+
+            <!-- Insertamos los demás campos con estilo 'badge'. 
+                 Para 'x_planta' se definirá color distinto para cada selección. -->
+            <xpath expr="//field[@name='name']" position="after">
+                <!-- Planta: diferentes decoraciones dependiendo la selección -->
+                <field name="x_planta"
+                       widget="badge"
+                       decoration-danger="x_planta == 'Planta 1'"
+                       decoration-warning="x_planta == 'Planta 2'"
+                       decoration-success="x_planta == 'Planta 3'"
+                       decoration-primary="x_planta == 'Planta 4'"
+                       decoration-info="x_planta == 'Planta 5'"
+                       decoration-muted="x_planta == 'Planta 6'"
+                       decoration-bf="x_planta == 'Planta 7'"
+                       />
+                <!-- Ubicación: un color único para cualquier valor -->
+                <field name="x_ubicacion"
+                       widget="badge"
+                       decoration-info="True"
+                       />
+                <!-- Fecha de ingreso: un color único para cualquier valor -->
+                <field name="x_fecha_ingreso"
+                       widget="badge"
+                       decoration-success="True"
+                       />
+                <!-- Antigüedad: un color único para cualquier valor -->
+                <field name="x_antiguedad"
+                       widget="badge"
+                       decoration-warning="True"
+                       />
+                <!-- Fecha de baja: un color único para cualquier valor -->
+                <field name="x_fecha_baja"
+                       widget="badge"
+                       decoration-danger="True"
+                       />
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
