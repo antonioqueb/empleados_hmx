@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Herencia de la vista de formulario de Empleado -->
+    <!-- ===================================================================
+         1) Vista de formulario (hr.view_employee_form)
+         =================================================================== -->
     <record id="view_employee_form_inherit_hmx" model="ir.ui.view">
         <field name="name">hr.employee.form.hmx</field>
         <field name="model">hr.employee</field>
+        <!-- Heredamos de la vista original de empleado en Odoo 17 -->
         <field name="inherit_id" ref="hr.view_employee_form"/>
         <field name="arch" type="xml">
-            <!-- Usamos //sheet en vez de buscar la clase 'o_hr_employee_form_main' -->
+            <!-- Insertamos un grupo adicional dentro de <sheet> -->
             <xpath expr="//sheet" position="inside">
                 <group string="Datos adicionales HMX">
                     <field name="x_numero_nomina"/>
@@ -20,29 +23,31 @@
         </field>
     </record>
 
-    <!-- Herencia de la vista de lista de Empleado -->
+
+    <!-- ===================================================================
+         2) Vista de lista (hr.view_employee_tree)
+         =================================================================== -->
     <record id="view_employee_tree_inherit_hmx" model="ir.ui.view">
         <field name="name">hr.employee.tree.hmx</field>
         <field name="model">hr.employee</field>
         <field name="inherit_id" ref="hr.view_employee_tree"/>
         <field name="arch" type="xml">
 
-            <!-- x_numero_nomina como primera columna y como campo ordenable -->
-            <xpath expr="//field[@name='name']" position="before">
-                <field name="x_numero_nomina" 
+            <!-- 1) Insertar x_numero_nomina antes del campo name,
+                   para que sea la primera columna (ordenable). -->
+            <xpath expr="//tree/field[@name='name']" position="before">
+                <field name="x_numero_nomina"
                        sortable="True"
                        widget="badge"
                        decoration-info="True"
-                />
+                       />
             </xpath>
 
-            <!-- Reafirmar la visibilidad del campo name (segundo) -->
-            <xpath expr="//field[@name='name']" position="attributes">
-                <attribute name="invisible">False</attribute>
-            </xpath>
+            <!-- 2) Insertar el resto de campos después del name,
+                   en el orden deseado, con decoraciones de color. -->
+            <xpath expr="//tree/field[@name='name']" position="after">
 
-            <!-- Los demás campos personalizados -->
-            <xpath expr="//field[@name='name']" position="after">
+                <!-- Planta: distintos colores para cada opción -->
                 <field name="x_planta"
                        widget="badge"
                        decoration-danger="x_planta == 'Planta 1'"
@@ -52,25 +57,34 @@
                        decoration-info="x_planta == 'Planta 5'"
                        decoration-muted="x_planta == 'Planta 6'"
                        decoration-bf="x_planta == 'Planta 7'"
-                />
+                       />
+
+                <!-- Ubicación: un color fijo (info) -->
                 <field name="x_ubicacion"
                        widget="badge"
                        decoration-info="True"
-                />
+                       />
+
+                <!-- Fecha de Ingreso: un color fijo (success) -->
                 <field name="x_fecha_ingreso"
                        widget="badge"
                        decoration-success="True"
-                />
+                       />
+
+                <!-- Antigüedad: un color fijo (warning) -->
                 <field name="x_antiguedad"
                        widget="badge"
                        decoration-warning="True"
-                />
+                       />
+
+                <!-- Fecha de Baja: un color fijo (danger) -->
                 <field name="x_fecha_baja"
                        widget="badge"
                        decoration-danger="True"
-                />
+                       />
             </xpath>
 
         </field>
     </record>
+
 </odoo>
