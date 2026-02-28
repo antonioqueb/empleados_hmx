@@ -6,80 +6,69 @@
     <record id="view_employee_form_inherit_hmx" model="ir.ui.view">
         <field name="name">hr.employee.form.hmx</field>
         <field name="model">hr.employee</field>
-        <!-- Heredamos de la vista original de empleado en Odoo 17 -->
         <field name="inherit_id" ref="hr.view_employee_form"/>
         <field name="arch" type="xml">
-            <!-- Insertamos un grupo adicional dentro de <sheet> -->
             <xpath expr="//sheet" position="inside">
                 <group string="Datos adicionales HMX">
                     <field name="x_numero_nomina"/>
                     <field name="x_planta"/>
                     <field name="x_ubicacion"/>
                     <field name="x_fecha_ingreso"/>
-                    <field name="x_antiguedad"/>
-                    <field name="x_antiguedad_meses"/>
-                    <field name="x_antiguedad_anios"/>
+                    <field name="x_antiguedad" readonly="1"/>
+                    <field name="x_antiguedad_meses" readonly="1"/>
+                    <field name="x_antiguedad_anios" readonly="1"/>
                     <field name="x_fecha_baja"/>
                 </group>
             </xpath>
         </field>
     </record>
 
-
     <!-- ===================================================================
          2) Vista de lista (hr.view_employee_tree)
          =================================================================== -->
-   <record id="view_employee_tree_inherit_hmx" model="ir.ui.view">
-    <field name="name">hr.employee.tree.hmx</field>
-    <field name="model">hr.employee</field>
-    <field name="inherit_id" ref="hr.view_employee_tree"/>
-    <field name="arch" type="xml">
+    <record id="view_employee_tree_inherit_hmx" model="ir.ui.view">
+        <field name="name">hr.employee.tree.hmx</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
 
-        <xpath expr="//tree/field[@name='name']" position="before">
-            <field name="x_numero_nomina"
-                   widget="badge"
-                   decoration-info="1"
-            />
-        </xpath>
+            <!-- Antes del nombre -->
+            <xpath expr="(//tree|//list)/field[@name='name']" position="before">
+                <field name="x_numero_nomina"
+                       widget="badge"
+                       decoration-info="1"/>
+            </xpath>
 
-        <xpath expr="//tree/field[@name='name']" position="after">
-            <field name="x_planta"
-                   widget="badge"
-                   decoration-danger="x_planta == 'Planta 1'"
-                   decoration-warning="x_planta == 'Planta 2'"
-                   decoration-success="x_planta == 'Planta 3'"
-                   decoration-muted="x_planta in ('Planta 4','Planta 5')"
-                   decoration-info="x_planta == 'Planta 6'"
-                   decoration-bf="x_planta == 'Planta 7'"
-            />
-            <field name="x_ubicacion"
-                   widget="badge"
-                   decoration-info="1"
-            />
-            <field name="x_fecha_ingreso"
-                   widget="badge"
-                   decoration-success="1"
-            />
-            <field name="x_antiguedad"
-                   widget="badge"
-                   decoration-warning="1"
-            />
-            <field name="x_antiguedad_meses"
-                widget="badge"
-                decoration-warning="1"
-            />
-            <field name="x_antiguedad_anios"
-                widget="badge"
-                decoration-warning="1"
-            />
-            <field name="x_fecha_baja"
-                   widget="badge"
-                   decoration-danger="1"
-            />
-        </xpath>
+            <!-- Después del nombre -->
+            <xpath expr="(//tree|//list)/field[@name='name']" position="after">
+                <field name="x_planta"
+                       widget="badge"
+                       decoration-danger="x_planta == 'Planta 1'"
+                       decoration-warning="x_planta == 'Planta 2'"
+                       decoration-success="x_planta == 'Planta 3'"
+                       decoration-muted="x_planta in ('Planta 4','Planta 5')"
+                       decoration-info="x_planta == 'Planta 6'"
+                       decoration-bf="x_planta == 'Planta 7'"/>
+                <field name="x_ubicacion"
+                       widget="badge"
+                       decoration-info="1"/>
+                <field name="x_fecha_ingreso"
+                       widget="badge"
+                       decoration-success="1"/>
+                <field name="x_antiguedad"
+                       widget="badge"
+                       decoration-warning="1"/>
+                <field name="x_antiguedad_meses"
+                       widget="badge"
+                       decoration-warning="1"/>
+                <field name="x_antiguedad_anios"
+                       widget="badge"
+                       decoration-warning="1"/>
+                <field name="x_fecha_baja"
+                       widget="badge"
+                       decoration-danger="1"/>
+            </xpath>
 
-    </field>
-</record>
-
-
+        </field>
+    </record>
 </odoo>
