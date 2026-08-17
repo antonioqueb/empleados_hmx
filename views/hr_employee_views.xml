@@ -12,6 +12,7 @@
                 <group string="Datos adicionales HMX">
                     <field name="x_numero_nomina"/>
                     <field name="x_planta"/>
+                    <field name="x_maquina"/>
                     <field name="x_ubicacion"/>
                     <field name="x_fecha_ingreso"/>
                     <field name="x_antiguedad" readonly="1"/>
@@ -32,6 +33,12 @@
         <field name="inherit_id" ref="hr.view_employee_tree"/>
         <field name="arch" type="xml">
 
+            <!-- Edición masiva: seleccionar varios empleados y asignarles la
+                 planta/máquina en una sola operación desde la lista. -->
+            <xpath expr="(//tree|//list)" position="attributes">
+                <attribute name="multi_edit">1</attribute>
+            </xpath>
+
             <!-- Antes del nombre -->
             <xpath expr="(//tree|//list)/field[@name='name']" position="before">
                 <field name="x_numero_nomina"
@@ -49,6 +56,7 @@
                        decoration-muted="x_planta in ('Planta 4','Planta 5')"
                        decoration-info="x_planta == 'Planta 6'"
                        decoration-bf="x_planta == 'Planta 7'"/>
+                <field name="x_maquina" optional="show"/>
                 <field name="x_ubicacion"
                        widget="badge"
                        decoration-info="1"/>
@@ -69,6 +77,33 @@
                        decoration-danger="1"/>
             </xpath>
 
+        </field>
+    </record>
+
+    <!-- ===================================================================
+         3) Búsqueda (hr.view_employee_filter): filtrar y agrupar por planta
+         =================================================================== -->
+    <record id="view_employee_filter_inherit_hmx" model="ir.ui.view">
+        <field name="name">hr.employee.search.hmx</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="x_numero_nomina" string="Nómina"/>
+                <field name="x_planta"/>
+                <field name="x_maquina"/>
+            </xpath>
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter name="sin_planta" string="Sin planta asignada"
+                        domain="[('x_planta', '=', False)]"/>
+                <filter name="sin_nomina" string="Sin número de nómina"
+                        domain="[('x_numero_nomina', '=', 0)]"/>
+                <group expand="0" string="HMX">
+                    <filter name="group_planta" string="Planta"
+                            context="{'group_by': 'x_planta'}"/>
+                </group>
+            </xpath>
         </field>
     </record>
 </odoo>

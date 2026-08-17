@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'empleados_hmx',
-    'version': '18.0.3.0.0',
+    'version': '18.0.3.1.0',
     'author': 'Alphaqueb Consulting S.A.S.',
     'category': 'Human Resources',
     'summary': 'Módulo personalizado para la gestión extendida de empleados.',
