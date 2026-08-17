@@ -115,6 +115,11 @@
         </field>
     </record>
 
+    <record id="action_hmx_capture_app" model="ir.actions.client">
+        <field name="name">Captura de asistencia</field>
+        <field name="tag">hmx_attendance_capture</field>
+    </record>
+
     <record id="action_hmx_attendance_session" model="ir.actions.act_window">
         <field name="name">Sesiones de captura</field>
         <field name="res_model">hmx.attendance.session</field>

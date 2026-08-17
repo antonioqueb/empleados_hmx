@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+  <t t-name="empleados_hmx.CaptureApp">
+    <div class="hmxa-app">
+
+      <!-- ============================ Cargando ============================ -->
+      <t t-if="state.view === 'loading'">
+        <div class="hmxa-loading"><div class="hmxa-spinner"/> Cargando…</div>
+      </t>
+
+      <!-- ============================ Inicio ============================ -->
+      <t t-if="state.view === 'start'">
+        <div class="hmxa-hero">
+          <div class="hmxa-hero-left">
+            <div class="hmxa-hero-kicker">Asistencias HMX</div>
+            <h1>Captura de asistencia</h1>
+            <div class="hmxa-hero-sub">
+              <t t-esc="state.bootstrap.user_name"/> · <span class="hmxa-clock" t-esc="clock"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="hmxa-start-body">
+          <t t-if="state.bootstrap.open_sessions.length">
+            <h2 class="hmxa-section-title">Sesiones en curso</h2>
+            <div class="hmxa-resume-grid">
+              <t t-foreach="state.bootstrap.open_sessions" t-as="s" t-key="s.id">
+                <button type="button" class="hmxa-resume-card" t-on-click="() => this.resumeSession(s.id)">
+                  <div class="hmxa-resume-top">
+                    <span class="hmxa-folio" t-esc="s.name"/>
+                    <span class="hmxa-chip" t-esc="s.planta || s.department"/>
+                  </div>
+                  <div class="hmxa-resume-meta">
+                    <span t-esc="s.date"/> · inicio <t t-esc="s.started_time"/>
+                  </div>
+                  <div class="hmxa-mini-track">
+                    <div class="hmxa-mini-fill" t-att-style="'width:' + s.progress + '%'"/>
+                  </div>
+                  <div class="hmxa-resume-progress">
+                    <t t-esc="s.marked"/>/<t t-esc="s.total"/> capturados — continuar →
+                  </div>
+                </button>
+              </t>
+            </div>
+          </t>
+
+          <h2 class="hmxa-section-title">Nueva sesión</h2>
+          <div class="hmxa-card">
+            <div class="hmxa-field-label">1 · Planta</div>
+            <div class="hmxa-planta-grid">
+              <t t-foreach="state.bootstrap.plantas" t-as="p" t-key="p.value">
+                <button type="button"
+                        t-att-class="'hmxa-planta-card' + (state.draft.planta === p.value ? ' hmxa-active' : '')"
+                        t-on-click="() => { state.draft.planta = state.draft.planta === p.value ? false : p.value; }">
+                  <span class="hmxa-planta-name" t-esc="p.label"/>
+                  <span class="hmxa-planta-count"><t t-esc="p.count"/> empleados</span>
+                </button>
+              </t>
+            </div>
+
+            <div class="hmxa-row">
+              <div class="hmxa-col">
+                <div class="hmxa-field-label">2 · Departamento (opcional)</div>
+                <select class="hmxa-select" t-model="state.draft.department_id">
+                  <option value="">— Todos —</option>
+                  <t t-foreach="state.bootstrap.departments" t-as="d" t-key="d.id">
+                    <option t-att-value="d.id" t-esc="d.name"/>
+                  </t>
+                </select>
+              </div>
+              <div class="hmxa-col">
+                <div class="hmxa-field-label">3 · Turno</div>
+                <div class="hmxa-seg">
+                  <t t-foreach="state.bootstrap.turnos" t-as="turno" t-key="turno.value">
+                    <button type="button"
+                            t-att-class="'hmxa-seg-btn' + (state.draft.turno === turno.value ? ' hmxa-active' : '')"
+                            t-on-click="() => { state.draft.turno = turno.value; }"
+                            t-esc="turno.label"/>
+                  </t>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" class="hmxa-btn-primary hmxa-btn-start" t-on-click="startSession">
+              Iniciar sesión de captura
+            </button>
+            <div class="hmxa-hint">
+              La hora de inicio se sella automáticamente y la plantilla de la
+              estancia se carga sola.
+            </div>
+          </div>
+        </div>
+      </t>
+
+      <!-- ============================ Captura ============================ -->
+      <t t-if="state.view === 'capture'">
+        <div class="hmxa-topbar">
+          <button type="button" class="hmxa-back" t-on-click="backToStart">←</button>
+          <div class="hmxa-topbar-info">
+            <div class="hmxa-topbar-title">
+              <span class="hmxa-folio" t-esc="state.session.name"/>
+              <span class="hmxa-chip" t-esc="state.session.planta || state.session.department"/>
+              <span class="hmxa-chip hmxa-chip-soft" t-esc="state.session.date"/>
+            </div>
+            <div class="hmxa-topbar-sub">
+              Inicio <b t-esc="state.session.started_time"/> · transcurrido
+              <b class="hmxa-mono" t-esc="elapsed"/>
+            </div>
+          </div>
+          <div class="hmxa-ring" t-att-style="ringStyle">
+            <div class="hmxa-ring-inner">
+              <span class="hmxa-ring-num" t-esc="progressPct + '%'"/>
+              <span class="hmxa-ring-sub"><t t-esc="markedCount"/>/<t t-esc="totalCount"/></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hmxa-toolbar">
+          <input type="text" class="hmxa-search" placeholder="Buscar por nombre, nómina o máquina…"
+                 t-model="state.filter"/>
+          <div class="hmxa-seg">
+            <button type="button" t-att-class="'hmxa-seg-btn' + (state.tab === 'all' ? ' hmxa-active' : '')"
+                    t-on-click="() => { state.tab = 'all'; }">Todos</button>
+            <button type="button" t-att-class="'hmxa-seg-btn' + (state.tab === 'pending' ? ' hmxa-active' : '')"
+                    t-on-click="() => { state.tab = 'pending'; }">Pendientes</button>
+            <button type="button" t-att-class="'hmxa-seg-btn' + (state.tab === 'marked' ? ' hmxa-active' : '')"
+                    t-on-click="() => { state.tab = 'marked'; }">Capturados</button>
+          </div>
+          <button type="button"
+                  t-att-class="'hmxa-btn-ghost' + (state.exitMode ? ' hmxa-active' : '')"
+                  t-on-click="() => { state.exitMode = !state.exitMode; }">
+            Pase de salida
+          </button>
+          <button type="button"
+                  t-att-class="'hmxa-btn-ghost' + (state.confirmBulk ? ' hmxa-danger' : '')"
+                  t-on-click="bulkAttendance">
+            <t t-if="state.confirmBulk">¿Confirmar marcar todo A?</t>
+            <t t-else="">Pendientes → A</t>
+          </button>
+          <button type="button" class="hmxa-btn-primary" t-on-click="openCloseModal">
+            Cerrar sesión
+          </button>
+        </div>
+
+        <div class="hmxa-lines">
+          <t t-foreach="filteredLines" t-as="line" t-key="line.id">
+            <div t-att-class="'hmxa-line' + (line.type_id ? ' hmxa-line-marked' : '') + (state.busy[line.id] ? ' hmxa-line-busy' : '')">
+              <div class="hmxa-avatar" t-att-style="avatarHue(line)" t-esc="line.initials"/>
+              <div class="hmxa-line-id">
+                <div class="hmxa-line-name" t-esc="line.employee"/>
+                <div class="hmxa-line-meta">
+                  <span class="hmxa-nomina" t-if="line.nomina">#<t t-esc="line.nomina"/></span>
+                  <span t-if="!line.nomina" class="hmxa-nomina hmxa-nomina-missing" title="Sin número de nómina: no empatará con el checador">sin nómina</span>
+                  <input type="text" class="hmxa-inline-input" placeholder="Máquina / área"
+                         t-att-value="line.maquina" t-on-change="(ev) => this.setMaquina(line, ev)"/>
+                </div>
+              </div>
+
+              <t t-if="!state.exitMode">
+                <div class="hmxa-pills">
+                  <t t-foreach="state.bootstrap.types" t-as="type" t-key="type.id">
+                    <button type="button"
+                            t-att-class="'hmx-pill hmx-pill-' + type.category + (line.type_id === type.id ? ' hmx-pill-selected' : '')"
+                            t-att-title="type.name"
+                            t-on-click="() => this.tapType(line, type)"
+                            t-esc="type.code"/>
+                  </t>
+                </div>
+                <div class="hmxa-te">
+                  <button type="button" class="hmxa-te-btn" t-on-click="() => this.stepOvertime(line, -0.5)">−</button>
+                  <span class="hmxa-te-value"><t t-esc="line.overtime"/> h</span>
+                  <button type="button" class="hmxa-te-btn" t-on-click="() => this.stepOvertime(line, 0.5)">+</button>
+                </div>
+                <input type="text" class="hmxa-inline-input hmxa-notes" placeholder="Obs."
+                       t-att-value="line.notes" t-on-change="(ev) => this.setNotes(line, ev)"/>
+                <div class="hmxa-stamp-cell">
+                  <t t-if="line.marked_time">
+                    <span class="hmxa-check">✓</span>
+                    <span class="hmxa-stamp-time" t-esc="line.marked_time"/>
+                  </t>
+                </div>
+              </t>
+
+              <t t-if="state.exitMode">
+                <div class="hmxa-exit-cell">
+                  <t t-if="line.exit_confirmed">
+                    <span class="hmxa-exit-done">Salida <b t-esc="line.exit_time"/></span>
+                  </t>
+                  <t t-else="">
+                    <button type="button" class="hmxa-btn-exit" t-on-click="() => this.toggleExit(line)">
+                      Confirmar salida
+                    </button>
+                  </t>
+                </div>
+              </t>
+            </div>
+          </t>
+          <div t-if="!filteredLines.length" class="hmxa-empty">Sin resultados para este filtro.</div>
+        </div>
+
+        <!-- Modal de cierre -->
+        <div t-if="state.showCloseModal" class="hmxa-overlay" t-on-click.self="() => { state.showCloseModal = false; }">
+          <div class="hmxa-modal">
+            <h3>Cerrar sesión <t t-esc="state.session.name"/></h3>
+            <div class="hmxa-summary">
+              <t t-foreach="summary" t-as="row" t-key="row.code">
+                <div class="hmxa-summary-row">
+                  <span class="hmxa-summary-code" t-esc="row.code"/>
+                  <span class="hmxa-summary-count" t-esc="row.count"/>
+                </div>
+              </t>
+            </div>
+            <div t-if="pendingNames.length" class="hmxa-warn">
+              Sin capturar (<t t-esc="pendingNames.length"/>): <t t-esc="pendingNames.join(', ')"/>
+            </div>
+            <div class="hmxa-modal-actions">
+              <button type="button" class="hmxa-btn-ghost" t-on-click="() => { state.showCloseModal = false; }">Seguir capturando</button>
+              <button type="button" class="hmxa-btn-primary" t-att-disabled="state.closing" t-on-click="confirmClose">
+                <t t-if="state.closing">Cerrando…</t>
+                <t t-else="">Sellar cierre y consolidar</t>
+              </button>
+            </div>
+          </div>
+        </div>
+      </t>
+
+      <!-- ============================ Cierre ============================ -->
+      <t t-if="state.view === 'done'">
+        <div class="hmxa-done">
+          <div class="hmxa-done-badge">✓</div>
+          <h1>Sesión cerrada</h1>
+          <p>
+            <b t-esc="state.session.name"/> · <t t-esc="state.session.planta || state.session.department"/> ·
+            inicio <b t-esc="state.session.started_time"/> — cierre <b t-esc="state.session.closed_time"/>
+          </p>
+          <div class="hmxa-summary hmxa-summary-final">
+            <t t-foreach="summary" t-as="row" t-key="row.code">
+              <div class="hmxa-summary-row">
+                <span class="hmxa-summary-code" t-esc="row.code"/>
+                <span class="hmxa-summary-count" t-esc="row.count"/>
+              </div>
+            </t>
+          </div>
+          <p class="hmxa-hint">Las marcas ya se consolidaron en los registros diarios.</p>
+          <button type="button" class="hmxa-btn-primary" t-on-click="backToStart">Volver al inicio</button>
+        </div>
+      </t>
+
+    </div>
+  </t>
+</templates>

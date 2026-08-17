@@ -14,6 +14,8 @@ Flujo de piso, calcado de la lista de asistencia en papel:
    (hmx.attendance.record), que son los que administración cruza contra
    el reloj checador. El supervisor nunca toca nada del checador.
 """
+from datetime import timezone
+
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 
@@ -188,6 +190,129 @@ class HmxAttendanceSession(models.Model):
         if any(s.state == 'done' for s in self):
             raise UserError(_('Una sesión cerrada no se puede eliminar.'))
         return super().unlink()
+
+    # ------------------------------------------------------------------
+    # API para la aplicación OWL de captura (menú Asistencias → Captura)
+    # ------------------------------------------------------------------
+    def _fmt_time(self, dt):
+        """Hora local del usuario en formato corto para mostrar en la app."""
+        if not dt:
+            return False
+        return fields.Datetime.context_timestamp(self, dt).strftime('%H:%M:%S')
+
+    @staticmethod
+    def _utc_ts(dt):
+        """Epoch en segundos para cronómetros del lado del cliente."""
+        return int(dt.replace(tzinfo=timezone.utc).timestamp()) if dt else False
+
+    @api.model
+    def js_bootstrap(self):
+        """Catálogos y sesiones abiertas del supervisor, en una sola llamada."""
+        Employee = self.env['hr.employee']
+        planta_counts = {
+            row['x_planta']: row['x_planta_count']
+            for row in Employee.read_group(
+                [('active', '=', True), ('x_planta', '!=', False)],
+                ['x_planta'], ['x_planta'])
+        }
+        types = [{
+            'id': t.id,
+            'code': t.code,
+            'name': t.name,
+            'category': ('ok' if t.is_attendance
+                         else 'justified' if t.justifies_absence else 'bad'),
+        } for t in self.env['hmx.attendance.incidence.type'].search([])]
+        open_sessions = self.search([
+            ('state', '=', 'open'), ('supervisor_id', '=', self.env.uid),
+        ])
+        return {
+            'user_name': self.env.user.name,
+            'plantas': [
+                {'value': value, 'label': label, 'count': planta_counts.get(value, 0)}
+                for value, label in self._fields['planta'].selection
+            ],
+            'departments': self.env['hr.department'].search_read(
+                [], ['id', 'name'], order='name'),
+            'turnos': [
+                {'value': value, 'label': label}
+                for value, label in self._fields['turno'].selection
+            ],
+            'types': types,
+            'open_sessions': [{
+                'id': s.id,
+                'name': s.name,
+                'planta': s.planta or '',
+                'department': s.department_id.name or '',
+                'date': s.date.strftime('%d/%m/%Y'),
+                'started_time': s._fmt_time(s.started_at),
+                'progress': s.progress,
+                'marked': s.marked_count,
+                'total': s.line_count,
+            } for s in open_sessions],
+        }
+
+    def js_payload(self):
+        """Estado completo de la sesión para renderizar la app de captura."""
+        self.ensure_one()
+        return {
+            'id': self.id,
+            'name': self.name,
+            'state': self.state,
+            'planta': self.planta or '',
+            'department': self.department_id.name or '',
+            'turno': self.turno or '',
+            'date': self.date.strftime('%d/%m/%Y'),
+            'started_time': self._fmt_time(self.started_at),
+            'started_ts': self._utc_ts(self.started_at),
+            'closed_time': self._fmt_time(self.closed_at),
+            'lines': [line.js_payload() for line in self.line_ids.sorted(
+                key=lambda l: (l.numero_nomina or 999999, l.id))],
+        }
+
+    def js_start(self, planta, department_id, turno):
+        """Crea la sesión desde la app y regresa su estado inicial."""
+        session = self.create({
+            'planta': planta or False,
+            'department_id': department_id or False,
+            'turno': turno or False,
+        })
+        return session.js_payload()
+
+    def js_close(self):
+        """Cierra desde la app y regresa el estado final consolidado."""
+        self.ensure_one()
+        self.action_close()
+        return self.js_payload()
+
+
+class HmxAttendanceSessionLinePayload(models.Model):
+    _inherit = 'hmx.attendance.session.line'
+
+    def js_payload(self):
+        self.ensure_one()
+        name = self.employee_id.name or ''
+        initials = ''.join(w[0] for w in name.split()[:2]).upper()
+        return {
+            'id': self.id,
+            'employee': name,
+            'initials': initials or '?',
+            'nomina': self.numero_nomina or 0,
+            'maquina': self.maquina or '',
+            'type_id': self.incidence_type_id.id or False,
+            'type_code': self.incidence_type_id.code or '',
+            'overtime': self.overtime_hours or 0.0,
+            'notes': self.notes or '',
+            'marked_time': self.session_id._fmt_time(self.marked_at),
+            'exit_confirmed': self.exit_confirmed,
+            'exit_time': self.session_id._fmt_time(self.exit_marked_at),
+        }
+
+    def js_mark(self, vals):
+        """Aplica una marca desde la app y regresa la línea ya sellada."""
+        self.ensure_one()
+        allowed = {'incidence_type_id', 'overtime_hours', 'notes', 'maquina', 'exit_confirmed'}
+        self.write({k: v for k, v in vals.items() if k in allowed})
+        return self.js_payload()
 
 
 class HmxAttendanceSessionLine(models.Model):

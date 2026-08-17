@@ -259,8 +259,14 @@
               web_icon="empleados_hmx,static/description/asistencias.svg"
               groups="empleados_hmx.group_hmx_attendance_supervisor"/>
 
+    <menuitem id="menu_hmx_capture_app"
+              name="Captura"
+              parent="menu_hmx_attendance_root"
+              action="action_hmx_capture_app"
+              sequence="5"/>
+
     <menuitem id="menu_hmx_attendance_session"
-              name="Sesiones de captura"
+              name="Historial de sesiones"
               parent="menu_hmx_attendance_root"
               action="action_hmx_attendance_session"
               sequence="10"/>
