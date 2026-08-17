@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+  <t t-name="empleados_hmx.HmxIncidenceSelector">
+    <div class="hmx-pill-row" t-att-class="isClosed ? 'hmx-pill-row-readonly' : ''">
+      <t t-foreach="types" t-as="type" t-key="type.id">
+        <button type="button"
+                t-att-class="pillClass(type)"
+                t-att-title="type.name"
+                t-on-click.stop="() => this.select(type)">
+          <t t-esc="type.code"/>
+        </button>
+      </t>
+    </div>
+  </t>
+</templates>

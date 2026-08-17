@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hmx_attendance_session_form" model="ir.ui.view">
+        <field name="name">hmx.attendance.session.form</field>
+        <field name="model">hmx.attendance.session</field>
+        <field name="arch" type="xml">
+            <form string="Sesión de captura" class="o_hmx_session_form">
+                <header>
+                    <button name="action_close" type="object" string="Cerrar sesión y consolidar"
+                            class="btn-primary" invisible="state != 'open'"
+                            confirm="Al cerrar se sella la hora de fin y las marcas pasan a los registros diarios. ¿Cerrar la sesión?"/>
+                    <button name="action_reload_roster" type="object" string="Recargar plantilla"
+                            invisible="state != 'open'"
+                            help="Agrega empleados de la estancia que se hayan dado de alta después de abrir la sesión."/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <div class="hmx-session-stamps">
+                        <div class="hmx-stamp">
+                            <span class="hmx-stamp-label">Supervisor</span>
+                            <span class="hmx-stamp-value"><field name="supervisor_id" readonly="1" nolabel="1"/></span>
+                        </div>
+                        <div class="hmx-stamp">
+                            <span class="hmx-stamp-label">Inicio de captura</span>
+                            <span class="hmx-stamp-value"><field name="started_at" readonly="1" nolabel="1"/></span>
+                        </div>
+                        <div class="hmx-stamp">
+                            <span class="hmx-stamp-label">Cierre</span>
+                            <span class="hmx-stamp-value"><field name="closed_at" readonly="1" nolabel="1"/></span>
+                        </div>
+                        <div class="hmx-stamp">
+                            <span class="hmx-stamp-label">Capturados</span>
+                            <span class="hmx-stamp-value">
+                                <field name="marked_count" readonly="1" nolabel="1" class="oe_inline"/> /
+                                <field name="line_count" readonly="1" nolabel="1" class="oe_inline"/>
+                            </span>
+                        </div>
+                    </div>
+                    <group>
+                        <group string="Estancia">
+                            <field name="planta" readonly="line_ids"/>
+                            <field name="department_id" readonly="line_ids"/>
+                        </group>
+                        <group string="Lista">
+                            <field name="date"/>
+                            <field name="turno" readonly="state != 'open'"/>
+                            <field name="progress" widget="progressbar"/>
+                        </group>
+                    </group>
+                    <field name="line_ids" readonly="state != 'open'">
+                        <list editable="bottom" default_order="numero_nomina, id"
+                              decoration-muted="incidence_type_id == False">
+                            <field name="session_state" column_invisible="1"/>
+                            <field name="numero_nomina" string="Nómina" readonly="1"/>
+                            <field name="employee_id" readonly="marked_at != False"
+                                   options="{'no_create': True, 'no_open': True}"/>
+                            <field name="maquina" optional="show"/>
+                            <field name="incidence_type_id" string="Lista de asistencia"
+                                   widget="hmx_incidence_selector" width="340px"/>
+                            <field name="overtime_hours" string="T.E." width="70px"/>
+                            <field name="notes" optional="show"/>
+                            <field name="marked_at" string="Hora del movimiento" readonly="1" optional="show"/>
+                            <field name="marked_by_id" optional="hide"/>
+                            <field name="exit_confirmed" string="Salida" optional="show"/>
+                            <field name="exit_marked_at" string="Hora salida" readonly="1" optional="hide"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_hmx_attendance_session_list" model="ir.ui.view">
+        <field name="name">hmx.attendance.session.list</field>
+        <field name="model">hmx.attendance.session</field>
+        <field name="arch" type="xml">
+            <list string="Sesiones de captura" default_order="started_at desc">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="planta" optional="show"/>
+                <field name="department_id" optional="show"/>
+                <field name="turno" optional="show"/>
+                <field name="supervisor_id" widget="many2one_avatar_user"/>
+                <field name="started_at"/>
+                <field name="closed_at" optional="show"/>
+                <field name="progress" widget="progressbar" string="Avance"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'open'"
+                       decoration-success="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hmx_attendance_session_search" model="ir.ui.view">
+        <field name="name">hmx.attendance.session.search</field>
+        <field name="model">hmx.attendance.session</field>
+        <field name="arch" type="xml">
+            <search string="Sesiones">
+                <field name="name"/>
+                <field name="supervisor_id"/>
+                <field name="department_id"/>
+                <filter name="mine" string="Mis sesiones" domain="[('supervisor_id', '=', uid)]"/>
+                <filter name="open" string="En captura" domain="[('state', '=', 'open')]"/>
+                <filter name="today" string="Hoy" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_planta" string="Planta" context="{'group_by': 'planta'}"/>
+                    <filter name="group_supervisor" string="Supervisor" context="{'group_by': 'supervisor_id'}"/>
+                    <filter name="group_date" string="Fecha" context="{'group_by': 'date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_hmx_attendance_session" model="ir.actions.act_window">
+        <field name="name">Sesiones de captura</field>
+        <field name="res_model">hmx.attendance.session</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hmx_attendance_session_search"/>
+        <field name="context">{'search_default_mine': 1, 'search_default_today': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Inicia una sesión de captura</p>
+            <p>Elige tu planta o departamento y la lista de empleados se carga
+               sola. Marca a cada quien con un toque (A, F, V, INC...), captura
+               el tiempo extra y cierra la sesión al final del turno. La hora de
+               inicio, de cada marca y del cierre se sellan automáticamente.</p>
+        </field>
+    </record>
+</odoo>

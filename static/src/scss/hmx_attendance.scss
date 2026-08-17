@@ -1,0 +1,142 @@
+// ======================================================================
+// Asistencias HMX — sesión de captura del supervisor
+// ======================================================================
+
+// ---- Píldoras de captura de un toque (widget hmx_incidence_selector) ----
+.hmx-pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+
+    &.hmx-pill-row-readonly .hmx-pill {
+        pointer-events: none;
+        opacity: 0.55;
+    }
+}
+
+.hmx-pill {
+    border: 1px solid #c9d2da;
+    border-radius: 999px;
+    background: #f6f8fa;
+    color: #40505c;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    line-height: 1;
+    padding: 6px 10px;
+    min-width: 34px;
+    cursor: pointer;
+    transition: transform 0.06s ease, box-shadow 0.12s ease,
+        background 0.12s ease, color 0.12s ease;
+
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(22, 57, 76, 0.18);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+}
+
+// Estado seleccionado, coloreado por naturaleza del código.
+.hmx-pill-selected {
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 2px 8px rgba(22, 57, 76, 0.25);
+
+    &.hmx-pill-ok {
+        background: #2e7d5b; // asistencia
+    }
+    &.hmx-pill-justified {
+        background: #1f6e96; // permisos, vacaciones, incapacidad
+    }
+    &.hmx-pill-bad {
+        background: #b3453c; // falta
+    }
+}
+
+// ---- Formulario de la sesión ----
+.o_hmx_session_form {
+    .o_form_sheet {
+        max-width: 1180px;
+    }
+
+    // Encabezado con los sellos de hora, siempre visibles.
+    .hmx-session-stamps {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        border-radius: 8px;
+        background: #f2f6f9;
+        border: 1px solid #dde6ec;
+
+        .hmx-stamp {
+            display: flex;
+            flex-direction: column;
+
+            .hmx-stamp-label {
+                font-size: 10px;
+                text-transform: uppercase;
+                letter-spacing: 0.6px;
+                color: #6a7d8a;
+            }
+
+            .hmx-stamp-value {
+                font-weight: 700;
+                color: #16394c;
+            }
+        }
+    }
+
+    // Barra de avance de la captura.
+    .hmx-progress-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        .hmx-progress-track {
+            flex: 1;
+            height: 8px;
+            border-radius: 999px;
+            background: #e4ebf0;
+            overflow: hidden;
+        }
+
+        .hmx-progress-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #2c6e8f, #2e7d5b);
+            transition: width 0.2s ease;
+        }
+
+        .hmx-progress-text {
+            font-weight: 700;
+            color: #16394c;
+            white-space: nowrap;
+        }
+    }
+
+    // Lista de empleados: renglones altos, cómodos para captura rápida.
+    .o_list_renderer {
+        .o_data_row > td {
+            padding-top: 7px;
+            padding-bottom: 7px;
+            vertical-align: middle;
+        }
+
+        .o_data_row .o_field_cell[name="employee_id"] {
+            font-weight: 600;
+            color: #16394c;
+        }
+
+        // La hora del movimiento en tono discreto: es un sello, no un dato a editar.
+        .o_data_row .o_field_cell[name="marked_at"] {
+            color: #6a7d8a;
+            font-variant-numeric: tabular-nums;
+        }
+    }
+}

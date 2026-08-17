@@ -259,22 +259,22 @@
               web_icon="empleados_hmx,static/description/asistencias.svg"
               groups="empleados_hmx.group_hmx_attendance_supervisor"/>
 
+    <menuitem id="menu_hmx_attendance_session"
+              name="Sesiones de captura"
+              parent="menu_hmx_attendance_root"
+              action="action_hmx_attendance_session"
+              sequence="10"/>
+
     <menuitem id="menu_hmx_attendance_record"
-              name="Captura de asistencia"
+              name="Registros diarios"
               parent="menu_hmx_attendance_root"
               action="action_hmx_attendance_record"
-              sequence="10"/>
+              sequence="20"/>
 
     <menuitem id="menu_hmx_attendance_incidences"
               name="Incidencias"
               parent="menu_hmx_attendance_root"
               action="action_hmx_attendance_incidences"
-              sequence="20"/>
-
-    <menuitem id="menu_hmx_clock_import"
-              name="Importar reloj checador"
-              parent="menu_hmx_attendance_root"
-              action="action_hmx_clock_import"
               sequence="30"/>
 
     <!-- Administración: submenú dentro de Empleados, solo para el gerente. -->

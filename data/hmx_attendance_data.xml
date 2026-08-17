@@ -8,6 +8,13 @@
             <field name="padding">4</field>
         </record>
 
+        <record id="seq_hmx_attendance_session" model="ir.sequence">
+            <field name="name">Sesión de captura de asistencia</field>
+            <field name="code">hmx.attendance.session</field>
+            <field name="prefix">CAP/%(year)s/</field>
+            <field name="padding">4</field>
+        </record>
+
         <!-- Catálogo oficial de las listas de asistencia HMX:
              A.- ASISTENCIA, F.- FALTA, S.- SUSPENDIDO, PCS.- PERMISO CON GOCE,
              PSS.- PERMISO SIN GOCE, V.- VACACIONES, INC.- INCAPACIDAD, más TX. -->

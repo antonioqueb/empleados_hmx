@@ -8,3 +8,7 @@ access_clock_line_supervisor,hmx.attendance.clock.line supervisor,model_hmx_atte
 access_clock_line_manager,hmx.attendance.clock.line manager,model_hmx_attendance_clock_line,group_hmx_attendance_manager,1,1,1,1
 access_clock_import_supervisor,hmx.attendance.clock.import supervisor,model_hmx_attendance_clock_import,group_hmx_attendance_supervisor,1,1,1,0
 access_clock_import_manager,hmx.attendance.clock.import manager,model_hmx_attendance_clock_import,group_hmx_attendance_manager,1,1,1,1
+access_session_supervisor,hmx.attendance.session supervisor,model_hmx_attendance_session,group_hmx_attendance_supervisor,1,1,1,1
+access_session_manager,hmx.attendance.session manager,model_hmx_attendance_session,group_hmx_attendance_manager,1,1,1,1
+access_session_line_supervisor,hmx.attendance.session.line supervisor,model_hmx_attendance_session_line,group_hmx_attendance_supervisor,1,1,1,1
+access_session_line_manager,hmx.attendance.session.line manager,model_hmx_attendance_session_line,group_hmx_attendance_manager,1,1,1,1

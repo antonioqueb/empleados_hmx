@@ -54,6 +54,12 @@ class HrEmployee(models.Model):
         help='Ubicación o área asignada al empleado.'
     )
 
+    x_maquina = fields.Char(
+        string='Máquina / Área habitual',
+        help='Máquina o área donde trabaja normalmente; precarga la lista de '
+             'asistencia del supervisor y se actualiza con cada captura.'
+    )
+
     x_fecha_ingreso = fields.Date(
         string='Fecha de Ingreso',
         help='Fecha en la que el empleado ingresó a la empresa.'

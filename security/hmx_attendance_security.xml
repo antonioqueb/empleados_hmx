@@ -18,4 +18,33 @@
         <field name="implied_ids" eval="[(4, ref('group_hmx_attendance_supervisor'))]"/>
         <field name="comment">Valida registros, administra el catálogo de incidencias y puede eliminar.</field>
     </record>
+
+    <!-- Cada supervisor trabaja solo con sus propias sesiones de captura. -->
+    <record id="rule_hmx_session_own" model="ir.rule">
+        <field name="name">Sesiones de captura: solo propias</field>
+        <field name="model_id" ref="model_hmx_attendance_session"/>
+        <field name="domain_force">[('supervisor_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_hmx_attendance_supervisor'))]"/>
+    </record>
+
+    <record id="rule_hmx_session_manager_all" model="ir.rule">
+        <field name="name">Sesiones de captura: gerente ve todas</field>
+        <field name="model_id" ref="model_hmx_attendance_session"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_hmx_attendance_manager'))]"/>
+    </record>
+
+    <record id="rule_hmx_session_line_own" model="ir.rule">
+        <field name="name">Líneas de sesión: solo de sesiones propias</field>
+        <field name="model_id" ref="model_hmx_attendance_session_line"/>
+        <field name="domain_force">[('session_id.supervisor_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('group_hmx_attendance_supervisor'))]"/>
+    </record>
+
+    <record id="rule_hmx_session_line_manager_all" model="ir.rule">
+        <field name="name">Líneas de sesión: gerente ve todas</field>
+        <field name="model_id" ref="model_hmx_attendance_session_line"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('group_hmx_attendance_manager'))]"/>
+    </record>
 </odoo>

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'empleados_hmx',
-    'version': '18.0.2.2.0',
+    'version': '18.0.3.0.0',
     'author': 'Alphaqueb Consulting S.A.S.',
     'category': 'Human Resources',
     'summary': 'Módulo personalizado para la gestión extendida de empleados.',
@@ -31,8 +31,16 @@ Gestión de asistencia HMX:
         'security/ir.model.access.csv',
         'data/hmx_attendance_data.xml',
         'views/hr_employee_views.xml',
+        'views/hmx_attendance_session_views.xml',
         'views/hmx_attendance_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'empleados_hmx/static/src/scss/hmx_attendance.scss',
+            'empleados_hmx/static/src/js/hmx_incidence_selector.js',
+            'empleados_hmx/static/src/xml/hmx_incidence_selector.xml',
+        ],
+    },
     'installable': True,
     'application': False,
     'license': 'AGPL-3',

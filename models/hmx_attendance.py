@@ -124,6 +124,10 @@ class HmxAttendanceRecord(models.Model):
         [('supervisor', 'Captura de supervisor'), ('checador', 'Generado por cruce del checador')],
         string='Origen', default='supervisor', readonly=True, tracking=True,
     )
+    session_id = fields.Many2one(
+        'hmx.attendance.session', 'Sesión de captura', readonly=True,
+        ondelete='set null',
+    )
 
     # Resultado del cruce con el reloj checador.
     checador_entry = fields.Datetime('Entrada (checador)', readonly=True)
