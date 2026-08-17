@@ -285,36 +285,6 @@ class HmxAttendanceSession(models.Model):
         return self.js_payload()
 
 
-class HmxAttendanceSessionLinePayload(models.Model):
-    _inherit = 'hmx.attendance.session.line'
-
-    def js_payload(self):
-        self.ensure_one()
-        name = self.employee_id.name or ''
-        initials = ''.join(w[0] for w in name.split()[:2]).upper()
-        return {
-            'id': self.id,
-            'employee': name,
-            'initials': initials or '?',
-            'nomina': self.numero_nomina or 0,
-            'maquina': self.maquina or '',
-            'type_id': self.incidence_type_id.id or False,
-            'type_code': self.incidence_type_id.code or '',
-            'overtime': self.overtime_hours or 0.0,
-            'notes': self.notes or '',
-            'marked_time': self.session_id._fmt_time(self.marked_at),
-            'exit_confirmed': self.exit_confirmed,
-            'exit_time': self.session_id._fmt_time(self.exit_marked_at),
-        }
-
-    def js_mark(self, vals):
-        """Aplica una marca desde la app y regresa la línea ya sellada."""
-        self.ensure_one()
-        allowed = {'incidence_type_id', 'overtime_hours', 'notes', 'maquina', 'exit_confirmed'}
-        self.write({k: v for k, v in vals.items() if k in allowed})
-        return self.js_payload()
-
-
 class HmxAttendanceSessionLine(models.Model):
     _name = 'hmx.attendance.session.line'
     _description = 'Línea de sesión de captura de asistencia'
@@ -359,3 +329,32 @@ class HmxAttendanceSessionLine(models.Model):
         if vals.get('exit_confirmed'):
             vals = dict(vals, exit_marked_at=now)
         return super().write(vals)
+
+    # ------------------------------------------------------------------
+    # API para la aplicación OWL de captura
+    # ------------------------------------------------------------------
+    def js_payload(self):
+        self.ensure_one()
+        name = self.employee_id.name or ''
+        initials = ''.join(w[0] for w in name.split()[:2]).upper()
+        return {
+            'id': self.id,
+            'employee': name,
+            'initials': initials or '?',
+            'nomina': self.numero_nomina or 0,
+            'maquina': self.maquina or '',
+            'type_id': self.incidence_type_id.id or False,
+            'type_code': self.incidence_type_id.code or '',
+            'overtime': self.overtime_hours or 0.0,
+            'notes': self.notes or '',
+            'marked_time': self.session_id._fmt_time(self.marked_at),
+            'exit_confirmed': self.exit_confirmed,
+            'exit_time': self.session_id._fmt_time(self.exit_marked_at),
+        }
+
+    def js_mark(self, vals):
+        """Aplica una marca desde la app y regresa la línea ya sellada."""
+        self.ensure_one()
+        allowed = {'incidence_type_id', 'overtime_hours', 'notes', 'maquina', 'exit_confirmed'}
+        self.write({k: v for k, v in vals.items() if k in allowed})
+        return self.js_payload()
