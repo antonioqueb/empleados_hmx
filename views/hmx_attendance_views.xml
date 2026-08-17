@@ -248,10 +248,12 @@
     </record>
 
     <!-- ============================ Menús ============================ -->
+    <!-- App raíz para la operación diaria de los supervisores: no requiere
+         acceso al módulo de Empleados. -->
     <menuitem id="menu_hmx_attendance_root"
-              name="Asistencia HMX"
-              parent="hr.menu_hr_root"
-              sequence="15"
+              name="Asistencias"
+              sequence="36"
+              web_icon="empleados_hmx,static/description/asistencias.svg"
               groups="empleados_hmx.group_hmx_attendance_supervisor"/>
 
     <menuitem id="menu_hmx_attendance_record"
@@ -272,10 +274,28 @@
               action="action_hmx_clock_import"
               sequence="30"/>
 
+    <!-- Administración: submenú dentro de Empleados, solo para el gerente. -->
+    <menuitem id="menu_hmx_attendance_admin"
+              name="Asistencia HMX"
+              parent="hr.menu_hr_root"
+              sequence="15"
+              groups="empleados_hmx.group_hmx_attendance_manager"/>
+
+    <menuitem id="menu_hmx_attendance_admin_records"
+              name="Registros de asistencia"
+              parent="menu_hmx_attendance_admin"
+              action="action_hmx_attendance_record"
+              sequence="10"/>
+
+    <menuitem id="menu_hmx_attendance_admin_imports"
+              name="Importaciones del checador"
+              parent="menu_hmx_attendance_admin"
+              action="action_hmx_clock_import"
+              sequence="20"/>
+
     <menuitem id="menu_hmx_incidence_type"
               name="Tipos de incidencia"
-              parent="menu_hmx_attendance_root"
+              parent="menu_hmx_attendance_admin"
               action="action_hmx_incidence_type"
-              sequence="40"
-              groups="empleados_hmx.group_hmx_attendance_manager"/>
+              sequence="30"/>
 </odoo>

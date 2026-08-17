@@ -1,4 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hr_employee_hmx_supervisor,hr.employee lectura supervisor asistencia,hr.model_hr_employee,group_hmx_attendance_supervisor,1,0,0,0
 access_incidence_type_supervisor,hmx.attendance.incidence.type supervisor,model_hmx_attendance_incidence_type,group_hmx_attendance_supervisor,1,0,0,0
 access_incidence_type_manager,hmx.attendance.incidence.type manager,model_hmx_attendance_incidence_type,group_hmx_attendance_manager,1,1,1,1
 access_attendance_record_supervisor,hmx.attendance.record supervisor,model_hmx_attendance_record,group_hmx_attendance_supervisor,1,1,1,0

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2C6E8F"/>
+      <stop offset="1" stop-color="#1B4A63"/>
+    </linearGradient>
+  </defs>
+  <!-- Fondo tipo app -->
+  <rect x="2" y="2" width="96" height="96" rx="20" fill="url(#bg)"/>
+  <!-- Carátula del reloj checador -->
+  <circle cx="44" cy="46" r="26" fill="#FFFFFF"/>
+  <circle cx="44" cy="46" r="26" fill="none" stroke="#16394C" stroke-width="4"/>
+  <!-- Marcas horarias -->
+  <line x1="44" y1="24" x2="44" y2="29" stroke="#16394C" stroke-width="3" stroke-linecap="round"/>
+  <line x1="44" y1="63" x2="44" y2="68" stroke="#16394C" stroke-width="3" stroke-linecap="round"/>
+  <line x1="22" y1="46" x2="27" y2="46" stroke="#16394C" stroke-width="3" stroke-linecap="round"/>
+  <line x1="61" y1="46" x2="66" y2="46" stroke="#16394C" stroke-width="3" stroke-linecap="round"/>
+  <!-- Manecillas: entrada a las 7:00 -->
+  <line x1="44" y1="46" x2="44" y2="31" stroke="#16394C" stroke-width="4" stroke-linecap="round"/>
+  <line x1="44" y1="46" x2="33" y2="46" stroke="#16394C" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="44" cy="46" r="3" fill="#16394C"/>
+  <!-- Palomita de asistencia -->
+  <circle cx="72" cy="70" r="17" fill="#4CAF7D" stroke="#FFFFFF" stroke-width="4"/>
+  <path d="M64 70 l6 6 l11 -12" fill="none" stroke="#FFFFFF" stroke-width="5"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
