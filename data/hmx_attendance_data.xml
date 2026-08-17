@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="seq_hmx_attendance_clock_import" model="ir.sequence">
+            <field name="name">Importación reloj checador</field>
+            <field name="code">hmx.attendance.clock.import</field>
+            <field name="prefix">CHK/%(year)s/</field>
+            <field name="padding">4</field>
+        </record>
+
+        <!-- Catálogo oficial de las listas de asistencia HMX:
+             A.- ASISTENCIA, F.- FALTA, S.- SUSPENDIDO, PCS.- PERMISO CON GOCE,
+             PSS.- PERMISO SIN GOCE, V.- VACACIONES, INC.- INCAPACIDAD, más TX. -->
+        <record id="incidence_type_asistencia" model="hmx.attendance.incidence.type">
+            <field name="name">Asistencia</field>
+            <field name="code">A</field>
+            <field name="sequence">1</field>
+            <field name="is_attendance" eval="True"/>
+            <field name="color">10</field>
+        </record>
+        <record id="incidence_type_falta" model="hmx.attendance.incidence.type">
+            <field name="name">Falta</field>
+            <field name="code">F</field>
+            <field name="sequence">2</field>
+            <field name="color">1</field>
+        </record>
+        <record id="incidence_type_suspendido" model="hmx.attendance.incidence.type">
+            <field name="name">Suspendido</field>
+            <field name="code">S</field>
+            <field name="sequence">3</field>
+            <field name="justifies_absence" eval="True"/>
+            <field name="color">2</field>
+        </record>
+        <record id="incidence_type_permiso_con_goce" model="hmx.attendance.incidence.type">
+            <field name="name">Permiso con goce de sueldo</field>
+            <field name="code">PCS</field>
+            <field name="sequence">4</field>
+            <field name="justifies_absence" eval="True"/>
+            <field name="color">4</field>
+        </record>
+        <record id="incidence_type_permiso_sin_goce" model="hmx.attendance.incidence.type">
+            <field name="name">Permiso sin goce de sueldo</field>
+            <field name="code">PSS</field>
+            <field name="sequence">5</field>
+            <field name="justifies_absence" eval="True"/>
+            <field name="color">3</field>
+        </record>
+        <record id="incidence_type_vacaciones" model="hmx.attendance.incidence.type">
+            <field name="name">Vacaciones</field>
+            <field name="code">V</field>
+            <field name="sequence">6</field>
+            <field name="justifies_absence" eval="True"/>
+            <field name="color">5</field>
+        </record>
+        <record id="incidence_type_incapacidad" model="hmx.attendance.incidence.type">
+            <field name="name">Incapacidad</field>
+            <field name="code">INC</field>
+            <field name="sequence">7</field>
+            <field name="justifies_absence" eval="True"/>
+            <field name="color">6</field>
+        </record>
+        <record id="incidence_type_tiempo_extra" model="hmx.attendance.incidence.type">
+            <field name="name">Asistencia con tiempo extra</field>
+            <field name="code">TX</field>
+            <field name="sequence">8</field>
+            <field name="is_attendance" eval="True"/>
+            <field name="color">9</field>
+        </record>
+    </data>
+</odoo>

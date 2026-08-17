@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_hmx_attendance" model="ir.module.category">
+        <field name="name">Asistencia HMX</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="group_hmx_attendance_supervisor" model="res.groups">
+        <field name="name">Supervisor de asistencia</field>
+        <field name="category_id" ref="module_category_hmx_attendance"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">Captura la asistencia diaria y sube los archivos del reloj checador.</field>
+    </record>
+
+    <record id="group_hmx_attendance_manager" model="res.groups">
+        <field name="name">Gerente de asistencia</field>
+        <field name="category_id" ref="module_category_hmx_attendance"/>
+        <field name="implied_ids" eval="[(4, ref('group_hmx_attendance_supervisor'))]"/>
+        <field name="comment">Valida registros, administra el catálogo de incidencias y puede eliminar.</field>
+    </record>
+</odoo>

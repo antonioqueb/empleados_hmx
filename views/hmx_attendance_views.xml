@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================ Registros diarios ============================ -->
+    <record id="view_hmx_attendance_record_list" model="ir.ui.view">
+        <field name="name">hmx.attendance.record.list</field>
+        <field name="model">hmx.attendance.record</field>
+        <field name="arch" type="xml">
+            <list string="Asistencia" editable="top" multi_edit="1"
+                  decoration-danger="cross_status in ['sin_checada', 'checo_con_incidencia']"
+                  decoration-warning="cross_status in ['sin_captura', 'incompleta']"
+                  decoration-muted="state == 'validated'">
+                <field name="date"/>
+                <field name="employee_id"/>
+                <field name="numero_nomina" optional="show"/>
+                <field name="planta" optional="show"/>
+                <field name="incidence_type_id"/>
+                <field name="turno" optional="show"/>
+                <field name="maquina" optional="show"/>
+                <field name="overtime_hours" sum="Total T.E." optional="show"/>
+                <field name="checador_entry" optional="show"/>
+                <field name="checador_exit" optional="show"/>
+                <field name="checador_hours" widget="float_time" optional="hide"/>
+                <field name="cross_status" widget="badge"
+                       decoration-success="cross_status == 'ok'"
+                       decoration-danger="cross_status in ['sin_checada', 'checo_con_incidencia']"
+                       decoration-warning="cross_status in ['sin_captura', 'incompleta']"/>
+                <field name="source" optional="hide"/>
+                <field name="captured_by_id" optional="hide"/>
+                <field name="captured_at" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'validated'"
+                       decoration-warning="state == 'to_review'"/>
+                <field name="notes" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_hmx_attendance_record_form" model="ir.ui.view">
+        <field name="name">hmx.attendance.record.form</field>
+        <field name="model">hmx.attendance.record</field>
+        <field name="arch" type="xml">
+            <form string="Registro de asistencia">
+                <header>
+                    <button name="action_validate" type="object" string="Validar"
+                            class="btn-primary" invisible="state == 'validated'"
+                            groups="empleados_hmx.group_hmx_attendance_manager"/>
+                    <button name="action_reset_draft" type="object" string="Regresar a capturado"
+                            invisible="state == 'draft'"
+                            groups="empleados_hmx.group_hmx_attendance_manager"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Captura">
+                            <field name="employee_id" readonly="state == 'validated'"/>
+                            <field name="numero_nomina"/>
+                            <field name="planta"/>
+                            <field name="date" readonly="state == 'validated'"/>
+                            <field name="incidence_type_id" readonly="state == 'validated'"/>
+                            <field name="turno" readonly="state == 'validated'"/>
+                            <field name="maquina" readonly="state == 'validated'"/>
+                            <field name="overtime_hours" readonly="state == 'validated'"/>
+                            <field name="notes" readonly="state == 'validated'"/>
+                        </group>
+                        <group string="Movimiento y cruce">
+                            <field name="captured_by_id"/>
+                            <field name="captured_at"/>
+                            <field name="source"/>
+                            <field name="checador_entry"/>
+                            <field name="checador_exit"/>
+                            <field name="checador_hours" widget="float_time"/>
+                            <field name="cross_status"/>
+                            <field name="clock_import_id"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_hmx_attendance_record_search" model="ir.ui.view">
+        <field name="name">hmx.attendance.record.search</field>
+        <field name="model">hmx.attendance.record</field>
+        <field name="arch" type="xml">
+            <search string="Asistencia">
+                <field name="employee_id"/>
+                <field name="numero_nomina"/>
+                <field name="incidence_type_id"/>
+                <field name="maquina"/>
+                <filter name="today" string="Hoy"
+                        domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="this_week" string="Esta semana"
+                        domain="[('date', '&gt;=', (context_today() - relativedelta(weeks=1, weekday=0)).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter name="incidences" string="Incidencias (no asistencia)"
+                        domain="[('incidence_type_id.is_attendance', '=', False)]"/>
+                <filter name="discrepancies" string="Discrepancias del cruce"
+                        domain="[('cross_status', 'in', ['sin_checada', 'checo_con_incidencia', 'sin_captura', 'incompleta'])]"/>
+                <filter name="to_review" string="Por validar" domain="[('state', '=', 'to_review')]"/>
+                <separator/>
+                <filter name="from_checador" string="Generados por checador" domain="[('source', '=', 'checador')]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_date" string="Fecha" context="{'group_by': 'date:day'}"/>
+                    <filter name="group_employee" string="Empleado" context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_planta" string="Planta" context="{'group_by': 'planta'}"/>
+                    <filter name="group_incidence" string="Incidencia" context="{'group_by': 'incidence_type_id'}"/>
+                    <filter name="group_cross_status" string="Resultado del cruce" context="{'group_by': 'cross_status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_hmx_attendance_record" model="ir.actions.act_window">
+        <field name="name">Captura de asistencia</field>
+        <field name="res_model">hmx.attendance.record</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hmx_attendance_record_search"/>
+        <field name="context">{'search_default_today': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Captura la asistencia del día</p>
+            <p>Registra por empleado la asistencia o incidencia (falta, permiso,
+               vacaciones, incapacidad...), el turno, la máquina y el tiempo extra.
+               Cada movimiento queda registrado con hora y usuario.</p>
+        </field>
+    </record>
+
+    <record id="action_hmx_attendance_incidences" model="ir.actions.act_window">
+        <field name="name">Incidencias</field>
+        <field name="res_model">hmx.attendance.record</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_hmx_attendance_record_search"/>
+        <field name="domain">['|', ('incidence_type_id.is_attendance', '=', False),
+                              ('cross_status', 'in', ['sin_checada', 'checo_con_incidencia', 'sin_captura', 'incompleta'])]</field>
+        <field name="context">{'search_default_group_cross_status': 1}</field>
+    </record>
+
+    <!-- ============================ Importaciones ============================ -->
+    <record id="view_hmx_clock_import_form" model="ir.ui.view">
+        <field name="name">hmx.attendance.clock.import.form</field>
+        <field name="model">hmx.attendance.clock.import</field>
+        <field name="arch" type="xml">
+            <form string="Importación del reloj checador">
+                <header>
+                    <button name="action_import_file" type="object" string="Importar checadas"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_cross_check" type="object" string="Cruzar contra captura"
+                            class="btn-primary" invisible="state != 'imported'"/>
+                    <button name="action_cross_check" type="object" string="Recruzar"
+                            invisible="state != 'crossed'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_records" type="object" class="oe_stat_button"
+                                icon="fa-check-square-o" invisible="record_count == 0">
+                            <field name="record_count" widget="statinfo" string="Registros"/>
+                        </button>
+                    </div>
+                    <h1><field name="name"/></h1>
+                    <group>
+                        <group string="Archivo">
+                            <field name="file_data" filename="file_name" readonly="state != 'draft'"/>
+                            <field name="file_name" invisible="1"/>
+                        </group>
+                        <group string="Resultado">
+                            <field name="line_count"/>
+                            <field name="matched_count"/>
+                            <field name="skipped_duplicates"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                    </group>
+                    <group string="Nóminas sin empleado" invisible="not unmatched_numbers">
+                        <field name="unmatched_numbers" nolabel="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Checadas" name="lines">
+                            <field name="line_ids" readonly="1">
+                                <list>
+                                    <field name="employee_number"/>
+                                    <field name="employee_id"/>
+                                    <field name="employee_name_file" optional="show"/>
+                                    <field name="punch_time"/>
+                                    <field name="punch_date" optional="hide"/>
+                                    <field name="device"/>
+                                    <field name="raw_state" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_hmx_clock_import_list" model="ir.ui.view">
+        <field name="name">hmx.attendance.clock.import.list</field>
+        <field name="model">hmx.attendance.clock.import</field>
+        <field name="arch" type="xml">
+            <list string="Importaciones">
+                <field name="name"/>
+                <field name="file_name"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="line_count"/>
+                <field name="matched_count"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'imported'"
+                       decoration-success="state == 'crossed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_hmx_clock_import" model="ir.actions.act_window">
+        <field name="name">Importar reloj checador</field>
+        <field name="res_model">hmx.attendance.clock.import</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Sube el archivo del reloj checador</p>
+            <p>Adjunta el .xls/.xlsx que exporta el checador, importa las checadas y
+               cruza contra la captura de los supervisores para conciliar y generar
+               las incidencias.</p>
+        </field>
+    </record>
+
+    <!-- ============================ Catálogo ============================ -->
+    <record id="view_hmx_incidence_type_list" model="ir.ui.view">
+        <field name="name">hmx.attendance.incidence.type.list</field>
+        <field name="model">hmx.attendance.incidence.type</field>
+        <field name="arch" type="xml">
+            <list string="Tipos de incidencia" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="is_attendance"/>
+                <field name="justifies_absence"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_hmx_incidence_type" model="ir.actions.act_window">
+        <field name="name">Tipos de incidencia</field>
+        <field name="res_model">hmx.attendance.incidence.type</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <!-- ============================ Menús ============================ -->
+    <menuitem id="menu_hmx_attendance_root"
+              name="Asistencia HMX"
+              parent="hr.menu_hr_root"
+              sequence="15"
+              groups="empleados_hmx.group_hmx_attendance_supervisor"/>
+
+    <menuitem id="menu_hmx_attendance_record"
+              name="Captura de asistencia"
+              parent="menu_hmx_attendance_root"
+              action="action_hmx_attendance_record"
+              sequence="10"/>
+
+    <menuitem id="menu_hmx_attendance_incidences"
+              name="Incidencias"
+              parent="menu_hmx_attendance_root"
+              action="action_hmx_attendance_incidences"
+              sequence="20"/>
+
+    <menuitem id="menu_hmx_clock_import"
+              name="Importar reloj checador"
+              parent="menu_hmx_attendance_root"
+              action="action_hmx_clock_import"
+              sequence="30"/>
+
+    <menuitem id="menu_hmx_incidence_type"
+              name="Tipos de incidencia"
+              parent="menu_hmx_attendance_root"
+              action="action_hmx_incidence_type"
+              sequence="40"
+              groups="empleados_hmx.group_hmx_attendance_manager"/>
+</odoo>
