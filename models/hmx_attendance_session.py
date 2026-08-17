@@ -269,6 +269,7 @@ class HmxAttendanceSession(models.Model):
                 key=lambda l: (l.numero_nomina or 999999, l.id))],
         }
 
+    @api.model
     def js_start(self, planta, department_id, turno):
         """Crea la sesión desde la app y regresa su estado inicial."""
         session = self.create({

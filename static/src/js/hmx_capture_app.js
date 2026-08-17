@@ -75,9 +75,15 @@ export class HmxCaptureApp extends Component {
             this.state.tab = "all";
             this.state.filter = "";
         } catch (error) {
-            // El error de Odoo (p. ej. estancia sin empleados) ya se muestra
-            // en su diálogo estándar; aquí solo evitamos romper el flujo.
+            this._notifyError(error);
         }
+    }
+
+    _notifyError(error) {
+        const message =
+            error?.data?.message || error?.message?.data?.message || error?.message ||
+            "Ocurrió un error inesperado.";
+        this.notification.add(String(message), { type: "danger", sticky: true });
     }
 
     async backToStart() {
@@ -267,6 +273,7 @@ export class HmxCaptureApp extends Component {
             this.state.view = "done";
         } catch (error) {
             this.state.showCloseModal = false;
+            this._notifyError(error);
         } finally {
             this.state.closing = false;
         }
