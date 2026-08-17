@@ -148,6 +148,9 @@
                             class="btn-primary" invisible="state != 'imported'"/>
                     <button name="action_cross_check" type="object" string="Recruzar"
                             invisible="state != 'crossed'"/>
+                    <button name="action_rematch_lines" type="object" string="Reintentar empate"
+                            invisible="state == 'draft' or not unmatched_numbers"
+                            help="Vuelve a conectar las checadas sin empleado después de capturar el número de nómina en las fichas."/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from odoo import api, fields, models
+from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError
 from dateutil.relativedelta import relativedelta
 
 
@@ -10,10 +11,29 @@ class HrEmployee(models.Model):
     # Campos HMX (NO cambiar nombres)
     # ──────────────────────────────────────────────────────────────────────────
 
+    # Llave de conexión con el reloj checador: la columna "Número" del archivo
+    # exportado se empata contra este campo. Debe ser único entre todos los
+    # empleados (incluidos los archivados) para que las checadas nunca se
+    # asignen a la persona equivocada.
     x_numero_nomina = fields.Integer(
         string='Número de nómina',
-        help='Número de nómina asignado al empleado.'
+        index=True,
+        help='Número de nómina asignado al empleado. Es la llave con la que se '
+             'empatan las checadas del reloj checador.'
     )
+
+    @api.constrains('x_numero_nomina')
+    def _check_numero_nomina_unico(self):
+        for record in self.filtered('x_numero_nomina'):
+            duplicated = self.with_context(active_test=False).search([
+                ('x_numero_nomina', '=', record.x_numero_nomina),
+                ('id', '!=', record.id),
+            ], limit=1)
+            if duplicated:
+                raise ValidationError(_(
+                    'El número de nómina %(num)s ya está asignado a %(emp)s. '
+                    'Debe ser único: es la llave de conexión con el reloj checador.'
+                ) % {'num': record.x_numero_nomina, 'emp': duplicated.name})
 
     x_planta = fields.Selection(
         [

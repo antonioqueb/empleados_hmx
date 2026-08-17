@@ -173,6 +173,12 @@ class HmxAttendanceRecord(models.Model):
         # Toda edición de campos de captura re-sella quién y cuándo hizo el movimiento.
         capture_fields = {'incidence_type_id', 'turno', 'maquina', 'overtime_hours', 'notes', 'date', 'employee_id'}
         if capture_fields & set(vals):
+            validated = self.filtered(lambda r: r.state == 'validated')
+            if validated and not self.env.user.has_group('empleados_hmx.group_hmx_attendance_manager'):
+                raise UserError(_(
+                    'Un registro validado solo lo puede modificar el gerente de asistencia '
+                    '(registros: %s).'
+                ) % ', '.join(validated.mapped('display_name')))
             vals = dict(vals, captured_by_id=self.env.user.id, captured_at=fields.Datetime.now())
         return super().write(vals)
 
@@ -308,6 +314,45 @@ class HmxAttendanceClockImport(models.Model):
                 continue
         return None
 
+    @api.model
+    def _employee_map(self):
+        """Mapa número de nómina → empleado, la conexión Odoo ↔ checador.
+
+        Incluye archivados (sus checadas históricas deben empatar), pero si un
+        número existiera repetido entre archivado y activo, prevalece el activo.
+        La unicidad del número se garantiza con la restricción en hr.employee.
+        """
+        employees = self.env['hr.employee'].with_context(active_test=False).search([
+            ('x_numero_nomina', '!=', 0),
+        ], order='active asc')  # los activos van al final y prevalecen en el mapa
+        return {emp.x_numero_nomina: emp for emp in employees}
+
+    def action_rematch_lines(self):
+        """Reintenta la conexión de checadas sin empleado.
+
+        Flujo: el archivo trae números de nómina que no existen en Odoo → se
+        capturan en la ficha del empleado (Número de nómina) → este botón
+        vuelve a empatar sin necesidad de reimportar el archivo.
+        """
+        self.ensure_one()
+        pending = self.line_ids.filtered(lambda l: not l.employee_id)
+        if not pending:
+            raise UserError(_('Todas las checadas de esta importación ya tienen empleado.'))
+        emp_by_number = self._employee_map()
+        matched = 0
+        for line in pending:
+            employee = emp_by_number.get(line.employee_number)
+            if employee:
+                line.employee_id = employee.id
+                matched += 1
+        still = sorted({l.employee_number for l in self.line_ids if not l.employee_id})
+        self.write({'unmatched_numbers': ', '.join(str(n) for n in still) or False})
+        self.message_post(body=_(
+            'Reintento de empate: %(matched)s checadas conectadas; '
+            '%(missing)s números siguen sin empleado.'
+        ) % {'matched': matched, 'missing': len(still)})
+        return True
+
     def action_import_file(self):
         self.ensure_one()
         rows = self._read_rows()
@@ -338,10 +383,7 @@ class HmxAttendanceClockImport(models.Model):
         col_state = col('estado')
         col_device = col('dispositivos', 'dispositivo')
 
-        employees = self.env['hr.employee'].with_context(active_test=False).search([
-            ('x_numero_nomina', '!=', 0),
-        ])
-        emp_by_number = {emp.x_numero_nomina: emp for emp in employees}
+        emp_by_number = self._employee_map()
 
         Line = self.env['hmx.attendance.clock.line']
         existing = {
@@ -407,9 +449,17 @@ class HmxAttendanceClockImport(models.Model):
         self.ensure_one()
         if self.state == 'draft':
             raise UserError(_('Primero importa el archivo del checador.'))
-        lines = self.line_ids.filtered('employee_id')
-        if not lines:
+        if not self.line_ids.filtered('employee_id'):
             raise UserError(_('Ninguna checada empató con un empleado; revisa los números de nómina.'))
+
+        # Se cruzan TODAS las checadas conectadas del rango de fechas, sin
+        # importar en qué importación llegaron: si las plantas suben archivos
+        # separados de la misma semana, el cruce las considera juntas.
+        lines = self.env['hmx.attendance.clock.line'].search([
+            ('employee_id', '!=', False),
+            ('punch_date', '>=', self.date_from),
+            ('punch_date', '<=', self.date_to),
+        ])
 
         punches = defaultdict(list)
         for line in lines:
@@ -431,12 +481,15 @@ class HmxAttendanceClockImport(models.Model):
                 ('employee_id', '=', emp_id), ('date', '=', day),
             ], limit=1)
             if record:
-                if not exit_:
-                    status = 'incompleta'
-                elif record.incidence_type_id.is_attendance:
-                    status = 'ok'
-                else:
+                # La discrepancia de fondo pesa más que la checada incompleta:
+                # si se capturó incidencia (falta, permiso...) y aun así checó,
+                # eso es lo que hay que revisar.
+                if not record.incidence_type_id.is_attendance:
                     status = 'checo_con_incidencia'
+                elif not exit_:
+                    status = 'incompleta'
+                else:
+                    status = 'ok'
                 record.write(dict(vals, cross_status=status))
             else:
                 # Checó pero nadie lo capturó: se genera el registro para validar.
@@ -458,10 +511,16 @@ class HmxAttendanceClockImport(models.Model):
         ])
         no_punch = Record.browse()
         for record in pending:
+            if not record.employee_id.x_numero_nomina:
+                # Sin número de nómina no hay conexión con el checador:
+                # no se puede conciliar ni acusar "sin checada".
+                continue
             if record.incidence_type_id.is_attendance:
                 record.write({'cross_status': 'sin_checada', 'clock_import_id': self.id})
                 no_punch |= record
-            elif record.incidence_type_id.justifies_absence:
+            else:
+                # Falta, permiso, vacaciones, etc. sin checada: la captura
+                # es congruente con el checador.
                 record.write({'cross_status': 'ok', 'clock_import_id': self.id})
 
         self.write({'state': 'crossed'})
